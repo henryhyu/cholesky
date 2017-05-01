@@ -4,5 +4,7 @@
 - Existing solvers are going to fail because they are dealing with denser problems
 - Parallelizing Cholesky
 
+use ```pip install numpy``` and ```pip install scipy```
+
 ### by Andrew Huang, Henry Yu
 
