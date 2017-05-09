@@ -6,5 +6,7 @@
 
 use ```pip install numpy``` and ```pip install scipy```
 
-### by Andrew Huang, Henry Yu
+### cspase library:
+http://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.html
 
+### by Andrew Huang, Henry Yu
