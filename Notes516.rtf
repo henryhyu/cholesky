@@ -1,0 +1,53 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1504\cocoasubrtf820
+{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;\red53\green53\blue53;\red220\green161\blue13;}
+{\*\expandedcolortbl;;\cssrgb\c27059\c27059\c27059;\cssrgb\c89412\c68627\c3922;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\fs24 \cf2 Approximate Minimum Degree Permutation\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf2 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf2 order = n\'92th order of system of linear equations?\
+\
+.mtx -> spalloc\
+spalloc -> triplet to true\
+cs_triplet -> CSC\
+chol functions\
+\
+implement cs_compress from Tim Davis\'92s book (JK cs_triplet is the function)\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf2 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf2 symbolic factorization (pre-factorization to allocate right amount of memory)\
+numeric factorization\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf2 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf2 break down cholsol so that we can time each operation\
+-> schol Ordering and symbolic analysis for a Cholesky factorization.{\field{\*\fldinst{HYPERLINK "https://www.dartdocs.org/documentation/csparse/0.3.0/edu.emory.mathcs.csparse/cs_schol.html"}}{\fldrslt \cf3 \'85}}\
+\
+-> chol Numeric Cholesky factorization LL=PAP'\
+\
+-> ipvec Permutes a vector, x = P'b. (inverse permutation vector)\
+\
+-> lsolve Solves a lower triangular system Lx=b\
+\
+-> ltsolve Solves an upper triangular system L'x=b\
+\
+-> pvec Permutes a vector, x=P*b, for dense vectors x and b\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf2 \
+\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf2 #include <time.h>\
+\
+clock_t start = clock(), diff;\
+ProcessIntenseFunction();\
+diff = clock() - start;\
+\
+int msec = diff * 1000 / CLOCKS_PER_SEC;\
+printf("Time taken %d seconds %d milliseconds", msec/1000, msec%1000);\
+}
