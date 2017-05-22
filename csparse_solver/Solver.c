@@ -2,7 +2,7 @@
 #include "mmio.h"
 #include <stdlib.h>
 # include <stdio.h>
-
+#include <time.h>
 int main (int argc, char *argv[]) {
     int ret_code;
 	FILE *f;
@@ -32,13 +32,22 @@ int main (int argc, char *argv[]) {
     // set up matrix
     cs *tmp = cs_spalloc(row, col, nz, 1, 1);
     for (i = 0; i < nz; i++) {
-    	 cs_entry(tmp, I[i], J[i], val[i]);
+      cs_entry(tmp, I[i], J[i], val[i]);
     }
-	cs *A = cs_triplet(tmp);
+    cs *A = cs_triplet(tmp);
+    int n = A->n ;
+    
+    // set up b
+    double *realx = cs_calloc(n, sizeof(double));
+    realx[0]=-1;
+    realx[row-1]=1;
+    //b = (double *)malloc(row * sizeof(double));
+    b = cs_calloc(n, sizeof(double));
+    //for (i = 0; i < row; i++) b[i] = 0;
 
-	// set up b
-    b = (double *)malloc(row * sizeof(double));
-    for (i = 0; i < row; i++) b[i] = 1;
+    cs_gaxpy(A,realx,b);
+    
+    
     
     // prints A
     // cs_print(A, 0);
@@ -58,24 +67,47 @@ int main (int argc, char *argv[]) {
     double *x ;
     css *S ;
     csn *N ;
-    int n, ok, order;
+    int ok, order;
     order = row;
     if (!A || !b) return (1) ;      /* check inputs */
-    n = A->n ;
+
+    clock_t symb_time, num_time, solve_time, total_time;
+    clock_t start = clock();
+    clock_t start2 = start;
     S = cs_schol (A, order) ;       /* ordering and symbolic analysis */
+    symb_time = clock()-start;
+    start = clock();
     N = cs_chol (A, S) ;        /* numeric Cholesky factorization */
+    num_time = clock()-start;
     x = cs_malloc (n, sizeof (double));
     ok = (S && N && x) ;
     if (ok)
     {
-    cs_ipvec (n, S->Pinv, b, x) ;   /* x = P*b */
-    cs_lsolve (N->L, x) ;       /* x = L\x */
-    cs_ltsolve (N->L, x) ;      /* x = L'\x */
-    cs_pvec (n, S->Pinv, x, b) ;    /* b = P'*x */
+      start = clock();
+      cs_ipvec (n, S->Pinv, b, x) ;   /* x = P*b */
+      cs_lsolve (N->L, x) ;       /* x = L\x */
+      cs_ltsolve (N->L, x) ;      /* x = L'\x */
+      cs_pvec (n, S->Pinv, x, b) ;    /* b = P'*x */
+      solve_time = clock()-start;
     }
+    total_time = clock()-start2;
+    printf("%d\n", ok);
+    printf("Time taken on ordering and symbolic analysis: %f s\n", symb_time*1.0/CLOCKS_PER_SEC);
+    printf("Time taken on numeric factorization: %f s\n", num_time*1.0/CLOCKS_PER_SEC);
+    printf("Time taken on triangular solve: %f s\n", solve_time*1.0/CLOCKS_PER_SEC);
+    printf("Total time taken: %f s\n", total_time*1.0/CLOCKS_PER_SEC);
+
+    double error;
+    for (i = 0; i < row; i++) {
+      error+=pow(b[i]-realx[i],2);
+    }
+    printf("Error in lhs: %f\n", sqrt(error));
+    
+    cs_free (realx) ;
     cs_free (x) ;
     cs_sfree (S) ;
     cs_nfree (N) ;
-    printf("%d\n", ok);
+    
+    
     return 0;
 }
