@@ -105,6 +105,7 @@ int main (int argc, char *argv[]) {
     
     cs_free (realx) ;
     cs_free (x) ;
+    cs_free (b) ;
     cs_sfree (S) ;
     cs_nfree (N) ;
     
