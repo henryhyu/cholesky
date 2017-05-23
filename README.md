@@ -18,3 +18,10 @@ http://math.nist.gov/MatrixMarket/mmio-c.html
 ### TODO:
 * more performance analysis?
 * improve performance?
+
+
+#### Todo 5/23/17:
+- Write scripts to run Kevin's .mtx files
+- Spit out results into a raw data file
+- From those raw data files, parse and use relevant data for output or potential data plots
+- Presentation next Tuesday on a projector to run our code and show results
