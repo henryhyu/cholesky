@@ -10,7 +10,7 @@ use ```pip install numpy``` and ```pip install scipy```
 http://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.html
 http://math.nist.gov/MatrixMarket/mmio-c.html
 
-### I need to learn how to makefile
+### I need to learn how to write README
 * Solver.c
 	* reads given matrix, performs csparse's cs_cholsol()
 	* to run: make; ./solve {file.mtx};
