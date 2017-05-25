@@ -10,24 +10,51 @@ int main (int argc, char *argv[]) {
     int i, *I, *J;
     double *val, *b;
 
+    int order=0;
+    if(argc > 2) {
+      order=atoi(argv[2]);
+    }
+
     // Read in input mtx
     if ((f = fopen(argv[1], "r")) == NULL)
     	exit(1);
 
-    if ((ret_code = mm_read_mtx_crd_size(f, &row, &col, &nz)) != 0)
+    const char *dot = strrchr(argv[1], '.');
+    if(!strcmp(dot,".mtx")) {
+      if ((ret_code = mm_read_mtx_crd_size(f, &row, &col, &nz)) != 0)
         exit(1);
+    }
+    else if(!strcmp(dot,".bin")) {
+      int tempn;
+      fread(&tempn, sizeof(int), 1, f);
+      fread(&nz, sizeof(int), 1, f);
+      row=tempn;
+      col=tempn;
+    }
 
     I = (int *)malloc(nz * sizeof(int));
     J = (int *)malloc(nz * sizeof(int));
     val = (double *)malloc(nz * sizeof(double));
-
-    for (i = 0; i < nz; i++) {
+    
+    if(!strcmp(dot,".mtx")) {
+      for (i = 0; i < nz; i++) {
         fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
         I[i]--;
         J[i]--;
+      }
     }
-    fclose(f);
+    else if(!strcmp(dot,".bin")) {
+      for (i = 0; i < nz; i++) {
+        fread(&I[i], sizeof(int), 1, f);
+        fread(&J[i], sizeof(int), 1, f);
+        fread(&val[i], sizeof(double), 1, f);
+        I[i]--;
+        J[i]--;
+      }
+    }
 
+    fclose(f);
+    
     // set up triplet matrix
     cs *tmp = cs_spalloc(row, col, nz, 1, 1);
     for (i = 0; i < nz; i++) {
@@ -40,7 +67,7 @@ int main (int argc, char *argv[]) {
     // set up b
     double *realx = cs_calloc(n, sizeof(double));
     realx[0]=-1;
-    realx[row-1]=1;
+    realx[n-1]=1;
     b = cs_calloc(n, sizeof(double));
     cs_gaxpy(A,realx,b);
     
@@ -48,10 +75,10 @@ int main (int argc, char *argv[]) {
     double *x ;
     css *S ;
     csn *N ;
-    int ok, order;
-    order = row;
-    if (!A || !b) return (1);      /* check inputs */
+    int ok;
 
+    if (!A || !b) return (1);      /* check inputs */
+    
     clock_t symb_time, num_time, solve_time, total_time;
     clock_t start = clock();
     clock_t start2 = start;
@@ -77,7 +104,7 @@ int main (int argc, char *argv[]) {
     printf("Time taken on triangular solve: %f s\n", solve_time*1.0/CLOCKS_PER_SEC);
     printf("Total time taken: %f s\n", total_time*1.0/CLOCKS_PER_SEC);
     double error;
-    for (i = 0; i < row; i++) {
+    for (i = 0; i < n; i++) {
       error+=pow(b[i]-realx[i],2);
     }
     printf("Error in lhs: %f\n", sqrt(error));
