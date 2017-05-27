@@ -7,12 +7,12 @@ int main (int argc, char *argv[]) {
     int ret_code;
 	FILE *f;
 	int row, col, nz;  
-    int i, *I, *J;
+    int i, *I, *J, n;
     double *val, *b;
-
     int order=0;
+
     if(argc > 2) {
-      order=atoi(argv[2]);
+      order = atoi(argv[2]);
     }
 
     // Read in input mtx
@@ -20,23 +20,23 @@ int main (int argc, char *argv[]) {
     	exit(1);
 
     const char *dot = strrchr(argv[1], '.');
-    if(!strcmp(dot,".mtx")) {
+    if (!strcmp(dot,".mtx")) {
       if ((ret_code = mm_read_mtx_crd_size(f, &row, &col, &nz)) != 0)
         exit(1);
     }
-    else if(!strcmp(dot,".bin")) {
+    else if (!strcmp(dot,".bin")) {
       int tempn;
       fread(&tempn, sizeof(int), 1, f);
       fread(&nz, sizeof(int), 1, f);
-      row=tempn;
-      col=tempn;
+      row = tempn;
+      col = tempn;
     }
 
     I = (int *)malloc(nz * sizeof(int));
     J = (int *)malloc(nz * sizeof(int));
     val = (double *)malloc(nz * sizeof(double));
     
-    if(!strcmp(dot,".mtx")) {
+    if (!strcmp(dot,".mtx")) {
       for (i = 0; i < nz; i++) {
         fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
         I[i]--;
@@ -62,7 +62,7 @@ int main (int argc, char *argv[]) {
     }
     cs *A = cs_triplet(tmp);
     A->nz = tmp->nz;
-    int n = A->n ;
+    n = A->n ;
     
     // set up b
     double *realx = cs_calloc(n, sizeof(double));
@@ -89,6 +89,8 @@ int main (int argc, char *argv[]) {
     num_time = clock()-start;
     x = cs_malloc (n, sizeof (double));
     ok = (S && N && x);
+//            printf("hello %p,%p,%p\n", S, N, x);
+    fflush(stdout);
     if (ok) {
       start = clock();
       cs_ipvec (n, S->Pinv, b, x) ;   /* x = P*b */
@@ -98,20 +100,21 @@ int main (int argc, char *argv[]) {
       solve_time = clock()-start;
     }
     total_time = clock()-start2;
-    printf("%d\n", ok);
-    printf("Time taken on ordering and symbolic analysis: %f s\n", symb_time*1.0/CLOCKS_PER_SEC);
-    printf("Time taken on numeric factorization: %f s\n", num_time*1.0/CLOCKS_PER_SEC);
-    printf("Time taken on triangular solve: %f s\n", solve_time*1.0/CLOCKS_PER_SEC);
-    printf("Total time taken: %f s\n", total_time*1.0/CLOCKS_PER_SEC);
-    double error;
-    for (i = 0; i < n; i++) {
-      error+=pow(b[i]-realx[i],2);
-    }
-    printf("Error in lhs: %f\n", sqrt(error));
+//   printf("%d\n", ok);
+    printf("%s,", argv[1]);
+   printf("%f,", symb_time*1.0/CLOCKS_PER_SEC); // Time taken on ordering and symbolic analysis
+   printf("%f,", num_time*1.0/CLOCKS_PER_SEC); // Time taken on numeric factorization
+   printf("%f,", solve_time*1.0/CLOCKS_PER_SEC); // Time taken on triangular solve
+   printf("%f,", total_time*1.0/CLOCKS_PER_SEC); // Total time taken: 
+   // double error;
+   // for (i = 0; i < n; i++) {
+   //   error+=pow(b[i]-realx[i],2);
+   // }
+   // printf("Error in lhs: %f\n", sqrt(error));
     
-    printf("nnz(A): %d\n", A->nzmax);
-    printf("nnz(R): %d\n", N->L->nzmax);
-    printf("nnz(R) / nnz(A): %f\n", 1.0 * N->L->nzmax / A->nzmax);
+    printf("%d,", A->nzmax); //nnz(A)
+    printf("%d\n", N->L->nzmax); // nnz(R)
+    //printf("nnz(R) / nnz(A): %f\n", 1.0 * N->L->nzmax / A->nzmax);
 
     cs_free (realx) ;
     cs_free (x) ;
