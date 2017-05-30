@@ -14,10 +14,11 @@ tree=tree+tree.transpose()
 diag=tree.sum(1)
 diag=-diag
 tree=tree.tolil()
+diag[0]=diag[0]+1
 tree.setdiag(diag)
-nonsingularT=tree.tocsr()[index,:].tocsc()[:,index]
-scipy.io.mmwrite(filenames[1],nonsingularT,precision=9)
-#scipy.io.mmwrite(filenames[1],tree,precision=9)
+#nonsingularT=tree.tocsr()[index,:].tocsc()[:,index]
+#scipy.io.mmwrite(filenames[1],nonsingularT,precision=9)
+scipy.io.mmwrite(filenames[1],tree,precision=9)
 
 nnz=U.nnz
 perm=scipy.argsort(-offtree.data)
