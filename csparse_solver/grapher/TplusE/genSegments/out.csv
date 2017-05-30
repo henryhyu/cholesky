@@ -1,0 +1,6 @@
+filename,Ordering,NumericFactorization,TriangularSolve,TotalTime,nnzRatio,nnz(A),nnz(R)
+./TplusE/genSegments/genSegmentsWeightedExpStretch1e5_treeplus.00.mtx,0.044433,0.011373,0.003482,0.059290,0.666668,299998,199999
+./TplusE/genSegments/genSegmentsWeightedExpStretch1e5_treeplus.01.mtx,0.057389,0.019538,0.004635,0.081565,1.131029,303993,343825
+./TplusE/genSegments/genSegmentsWeightedExpStretch1e5_treeplus.05.mtx,0.094452,0.486859,0.013155,0.594468,3.461348,319993,1107607
+./TplusE/genSegments/genSegmentsWeightedExpStretch1e5_treeplus.15.mtx,0.158522,10.172111,0.075316,10.405953,15.909698,359993,5727380
+./TplusE/genSegments/genSegmentsWeightedExpStretch1e5_treeplus.1.mtx,0.247177,3.512595,0.037799,3.797575,9.007065,339993,3062339

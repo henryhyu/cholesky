@@ -502,7 +502,10 @@ csn *cs_chol (const cs *A, const css *S)
 	    Lx [p] = lki ;
 	}
 	/* --- Compute L(k,k) ----------------------------------------------- */
-	if (d <= 0) return (cs_ndone (N, E, w, x, 0)) ; /* not pos def */
+	if (d <= 0) {
+	printf("%d/%dbroken\n", top, n);
+	return (cs_ndone (N, E, w, x, 0)) ; /* not pos def */
+	}
 	p = c [k]++ ;
 	Li [p] = k ;		    /* store L(k,k) = sqrt (d) in column k */
 	Lx [p] = sqrt (d) ;

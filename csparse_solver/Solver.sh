@@ -4,6 +4,6 @@ do
 	for mtx in ./"$dir"/*.mtx
 	do
 		echo "$mtx"
-		./solve "$mtx" >> output
+		./solve "$mtx"
 	done
 done

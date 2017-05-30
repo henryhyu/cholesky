@@ -25,7 +25,6 @@ def create_bar(data, xlab, ylab, title, xticks, out):
 		alpha=opacity, 
 		color='b')
 
-
 	autolabel(ax, rect, 3)
 	plt.xlabel(xlab)
 	plt.ylabel(ylab)
@@ -57,7 +56,8 @@ def create_bi_bar(data1, data2, xlab, ylab, title, xticks, lab1, lab2, out):
 	plt.ylabel(ylab)
 	plt.title(title)
 	plt.xticks(index + bar_width / 2, xticks)
-	plt.tight_layout()
+	#plt.tight_layout()
+	ax.legend((rect1[0], rect2[0]), ('nnz(A)', 'nnz(R)'))
 	# plt.show()
 	plt.savefig(out)
 
@@ -85,4 +85,4 @@ if __name__ == "__main__":
 	headers, data = out_parse(out_file, n + 2)
 	for i in xrange(1, n):
 		create_bar(data[i], "Num Edges", "Time (s)", headers[i], data[0], current_dir + headers[i]+".png")
-	create_bi_bar(data[6], data[7], "Num Edges", "Time (s)", "nnz", data[0], "nnz(A)", "nnz(R)", current_dir + "nnz.png")
+	create_bi_bar(data[6], data[7], "Num Edges", "Nonzeroes", "nnz", data[0], "nnz(A)", "nnz(R)", current_dir + "nnz.png")

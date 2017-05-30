@@ -101,20 +101,20 @@ int main (int argc, char *argv[]) {
     }
     total_time = clock()-start2;
 //   printf("%d\n", ok);
-    printf("%s,", argv[1]);
-   printf("%f,", symb_time*1.0/CLOCKS_PER_SEC); // Time taken on ordering and symbolic analysis
-   printf("%f,", num_time*1.0/CLOCKS_PER_SEC); // Time taken on numeric factorization
-   printf("%f,", solve_time*1.0/CLOCKS_PER_SEC); // Time taken on triangular solve
-   printf("%f,", total_time*1.0/CLOCKS_PER_SEC); // Total time taken: 
-   // double error;
-   // for (i = 0; i < n; i++) {
-   //   error+=pow(b[i]-realx[i],2);
-   // }
-   // printf("Error in lhs: %f\n", sqrt(error));
+  //  printf("%s,", argv[1]);
+   printf("Time taken on ordering and symbolic analysis: %f\n", symb_time*1.0/CLOCKS_PER_SEC);
+   printf("Time taken on numeric factorization: %f\n", num_time*1.0/CLOCKS_PER_SEC); 
+   printf("Time taken on triangular solve: %f\n", solve_time*1.0/CLOCKS_PER_SEC);
+   printf("Total time taken: %f\n", total_time*1.0/CLOCKS_PER_SEC);
+   double error;
+   for (i = 0; i < n; i++) {
+     error += pow(b[i] - realx[i], 2);
+   }
+   printf("Error in lhs: %f\n", sqrt(error));
     
-    printf("%d,", A->nzmax); //nnz(A)
-    printf("%d\n", N->L->nzmax); // nnz(R)
-    //printf("nnz(R) / nnz(A): %f\n", 1.0 * N->L->nzmax / A->nzmax);
+    printf("nnz(A): %d\n", A->nzmax); //nnz(A)
+    printf("nnz(R): %d\n", N->L->nzmax); // nnz(R)
+    printf("nnz(R) / nnz(A): %f\n", 1.0 * N->L->nzmax / A->nzmax);
 
     cs_free (realx) ;
     cs_free (x) ;
