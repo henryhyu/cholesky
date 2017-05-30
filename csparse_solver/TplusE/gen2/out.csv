@@ -1,5 +1,0 @@
-filename,Ordering,NumericFactorization,TriangularSolve,TotalTime,nnzRatio,nnz(A),nnz(R)
-./TplusE/gen2/gen2MeshWeightedExpStretch1e5_treeplus.01.mtx,0.195484,0.015197,0.004695,0.215379,1.006866,303541,305625
-./TplusE/gen2/gen2MeshWeightedExpStretch1e5_treeplus.05.mtx,0.120958,0.087961,0.005137,0.214061,1.033856,319469,330285
-./TplusE/gen2/gen2MeshWeightedExpStretch1e5_treeplus.15.mtx,0.151947,0.065195,0.008392,0.225537,1.147724,359285,412360
-./TplusE/gen2/gen2MeshWeightedExpStretch1e5_treeplus.1.mtx,0.121754,0.057624,0.006440,0.185823,1.062992,339377,360755

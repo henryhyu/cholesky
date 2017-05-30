@@ -5,19 +5,19 @@
 #include <time.h>
 int main (int argc, char *argv[]) {
     int ret_code;
-	FILE *f;
-	int row, col, nz;  
+    FILE *f;
+    int row, col, nz;  
     int i, *I, *J, n;
     double *val, *b;
     int order=0;
 
-    // if(argc > 2) {
-    //   order = atoi(argv[2]);
-    // }
+    if(argc > 2) {
+      order = atoi(argv[2]);
+    }
 
     // Read in input mtx
     if ((f = fopen(argv[1], "r")) == NULL)
-    	exit(1);
+        exit(1);
 
     const char *dot = strrchr(argv[1], '.');
     if (!strcmp(dot,".mtx")) {
@@ -89,6 +89,8 @@ int main (int argc, char *argv[]) {
     num_time = clock()-start;
     x = cs_malloc (n, sizeof (double));
     ok = (S && N && x);
+//            printf("hello %p,%p,%p\n", S, N, x);
+    fflush(stdout);
     if (ok) {
       start = clock();
       cs_ipvec (n, S->Pinv, b, x) ;   /* x = P*b */
@@ -99,23 +101,20 @@ int main (int argc, char *argv[]) {
     }
     total_time = clock()-start2;
 //   printf("%d\n", ok);
-    f = fopen(argv[2], "a");
-    fprintf(f, "%s,", argv[1]);
-    fprintf(f, "%f,", symb_time*1.0/CLOCKS_PER_SEC); // Time taken on ordering and symbolic analysis
-    fprintf(f, "%f,", num_time*1.0/CLOCKS_PER_SEC); // Time taken on numeric factorization
-    fprintf(f, "%f,", solve_time*1.0/CLOCKS_PER_SEC); // Time taken on triangular solve
-    fprintf(f, "%f,", total_time*1.0/CLOCKS_PER_SEC); // Total time taken: 
-    // double error;
-    // for (i = 0; i < n; i++) {
-    //   error+=pow(b[i]-realx[i],2);
-    // }
-    // printf("Error in lhs: %f\n", sqrt(error));
-
-
-    fprintf(f, "%f,", 1.0 * N->L->nzmax / A->nzmax);
-    fprintf(f, "%d,", A->nzmax); //nnz(A)
-    fprintf(f, "%d\n", N->L->nzmax); // nnz(R)
-    fclose(f);
+    printf("%s,", argv[1]);
+   printf("%f,", symb_time*1.0/CLOCKS_PER_SEC); // Time taken on ordering and symbolic analysis
+   printf("%f,", num_time*1.0/CLOCKS_PER_SEC); // Time taken on numeric factorization
+   printf("%f,", solve_time*1.0/CLOCKS_PER_SEC); // Time taken on triangular solve
+   printf("%f,", total_time*1.0/CLOCKS_PER_SEC); // Total time taken: 
+   // double error;
+   // for (i = 0; i < n; i++) {
+   //   error+=pow(b[i]-realx[i],2);
+   // }
+   // printf("Error in lhs: %f\n", sqrt(error));
+    
+    printf("%d,", A->nzmax); //nnz(A)
+    printf("%d\n", N->L->nzmax); // nnz(R)
+    //printf("nnz(R) / nnz(A): %f\n", 1.0 * N->L->nzmax / A->nzmax);
 
     cs_free (realx) ;
     cs_free (x) ;
