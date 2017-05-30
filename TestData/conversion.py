@@ -6,6 +6,7 @@ import scikits.sparse.cholmod
 filenames=[sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6],sys.argv[7],sys.argv[8],sys.argv[9],sys.argv[10]]
 A=scipy.io.mmread(filenames[0])
 n=A.shape[0]
+index=scipy.arange(n-1)
 offtree=scipy.sparse.triu(A,2)
 U=scipy.sparse.triu(A,1)
 tree=U-offtree
@@ -14,12 +15,13 @@ diag=tree.sum(1)
 diag=-diag
 tree=tree.tolil()
 tree.setdiag(diag)
-
-scipy.io.mmwrite(filenames[1],tree,precision=9)
+nonsingularT=tree.tocsr()[index,:].tocsc()[:,index]
+scipy.io.mmwrite(filenames[1],nonsingularT,precision=9)
+#scipy.io.mmwrite(filenames[1],tree,precision=9)
 
 nnz=U.nnz
 perm=scipy.argsort(-offtree.data)
-index=scipy.arange(n-1)
+
 fraction=[.01,.1,.15,.2]
 for i in xrange(0,4):
     extra=scipy.floor(fraction[i]*nnz)

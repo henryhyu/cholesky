@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for graphtype in gen2Mesh gen3Mesh genFixedLength genRandom genSegments
+for graphtype in gen2Mesh gen3Mesh genFixedLength genSegments
 do
     #for weighttype in UnweightedUniformStretch WeightedUniformStretch UnweightedExpStretch WeightedExpStretch
     #do
