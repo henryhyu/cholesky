@@ -6,9 +6,12 @@
 
 use ```pip install numpy``` and ```pip install scipy```
 
+perf stat -x, -e cache-misses,cache-references ./exec
+
 ### libraries:
 http://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.html
 http://math.nist.gov/MatrixMarket/mmio-c.html
+- matplotlib, numpy, 
 
 ### I need to learn how to write README
 * Solver.c
