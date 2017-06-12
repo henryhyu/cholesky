@@ -95,5 +95,6 @@ if __name__ == "__main__":
 		for d in data:
 			x_ticks = get_x_ticks(data[d]["files"])
 			if d == "nnz":
-				create_bi_bar(data[d]["x_data"], data[d]["x_data"], data[d]['x_label'], data[d]['y_label'], d, x_ticks, "nnz(A)", "nnz(R)", current_dir+d+".png")
-			create_bar(data[d]["y_data"], data[d]['x_label'], data[d]['y_label'], d, x_ticks, current_dir+d+".png")
+				create_bi_bar(data[d]["x_data"], data[d]["y_data"], data[d]['x_label'], data[d]['y_label'], d, x_ticks, "nnz(A)", "nnz(R)", current_dir+d+".png")
+			else:
+				create_bar(data[d]["y_data"], data[d]['x_label'], data[d]['y_label'], d, x_ticks, current_dir+d+".png")

@@ -49,8 +49,6 @@ void update_xdata(json_object *jobj, double value, const char *name) {
     json_object_array_add(xdata, jvalue);
 }
 
-
-
 int main (int argc, char *argv[]) {
 
     int ret_code;
@@ -59,6 +57,7 @@ int main (int argc, char *argv[]) {
     int *I, *J, n;
     double *val, *b;
     int order=0;
+    int iter = atoi(argv[3]);
 
     // Read in input mtx
     if ((f = fopen(argv[1], "r")) == NULL)
@@ -124,25 +123,31 @@ int main (int argc, char *argv[]) {
 
     if (!A || !b) return (1);      /* check inputs */
 
-    clock_t symb_time, num_time, solve_time, total_time;
-    clock_t start = clock();
-    clock_t start2 = start;
-    S = cs_schol (A, order) ;       /* ordering and symbolic analysis */
-    symb_time = clock()-start;
-    start = clock();
-    N = cs_chol (A, S);        /* numeric Cholesky factorization */
-    num_time = clock()-start;
-    x = cs_malloc (n, sizeof (double));
-    ok = (S && N && x);
-    if (ok) {
+    clock_t symb_time=0, num_time=0, solve_time=0, total_time=0, start, start2;
+    for (int i = 0; i < iter; i++) {
         start = clock();
-        cs_ipvec (n, S->Pinv, b, x) ;   /* x = P*b */
-        cs_lsolve (N->L, x) ;       /* x = L\x */
-        cs_ltsolve (N->L, x) ;      /* x = L'\x */
-        cs_pvec (n, S->Pinv, x, b) ;    /* b = P'*x */
-        solve_time = clock()-start;
+        start2 = start;
+        S = cs_schol (A, order) ;       /* ordering and symbolic analysis */
+        symb_time += clock()-start;
+        start = clock();
+        N = cs_chol (A, S);        /* numeric Cholesky factorization */
+        num_time += clock()-start;
+        x = cs_malloc (n, sizeof (double));
+        ok = (S && N && x);
+        if (ok) {
+            start = clock();
+            cs_ipvec (n, S->Pinv, b, x) ;   /* x = P*b */
+            cs_lsolve (N->L, x) ;       /* x = L\x */
+            cs_ltsolve (N->L, x) ;      /* x = L'\x */
+            cs_pvec (n, S->Pinv, x, b) ;    /* b = P'*x */
+            solve_time += clock()-start;
+        }
+        total_time += clock()-start2;
     }
-    total_time = clock()-start2;
+    symb_time /= iter;
+    num_time /= iter;
+    solve_time /= iter;
+    total_time /= iter;
 
     // below is hard coded*
     json_object *jobj = json_object_from_file(argv[2]);
