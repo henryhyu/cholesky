@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
 def autolabel(ax, rects, decimals):
 	for rect in rects:
@@ -77,12 +78,22 @@ def out_parse(file, n):
 
 	return headers, data
 
+def get_x_ticks(f_list):
+	x_ticks = []
+	for file in f_list:
+		x_ticks.append(int(file[file.index("_")+10:-4]))
+
+	return x_ticks
+
+
 if __name__ == "__main__":
-	# hard coded
-	n = 6
 	current_dir = sys.argv[1]
 	out_file = sys.argv[2]
-	headers, data = out_parse(out_file, n + 2)
-	for i in xrange(1, n):
-		create_bar(data[i], "Num Edges", "Time (s)", headers[i], data[0], current_dir + headers[i]+".png")
-	create_bi_bar(data[6], data[7], "Num Edges", "Nonzeroes", "nnz", data[0], "nnz(A)", "nnz(R)", current_dir + "nnz.png")
+
+	with open(out_file, 'r') as fd:
+		data = json.load(fd)
+		for d in data:
+			x_ticks = get_x_ticks(data[d]["files"])
+			if d == "nnz":
+				create_bi_bar(data[d]["x_data"], data[d]["x_data"], data[d]['x_label'], data[d]['y_label'], d, x_ticks, "nnz(A)", "nnz(R)", current_dir+d+".png")
+			create_bar(data[d]["y_data"], data[d]['x_label'], data[d]['y_label'], d, x_ticks, current_dir+d+".png")

@@ -1,10 +1,8 @@
 #!/bin/bash
 
-out_name="out.csv"
+out_name="out.json"
 for dir in $@
 do
-	# header
-	echo "filename,Ordering,NumericFactorization,TriangularSolve,TotalTime,nnzRatio,nnz(A),nnz(R)" > $dir$out_name
 	# fills outfile
 	for mtx in ./"$dir"*.mtx
 	do
