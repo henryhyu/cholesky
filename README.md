@@ -24,3 +24,7 @@
 - Tree Plus Edges Problem (not dense enough, will stay sparse most of the time, won’t have dense sub matrices)
 - Existing solvers are going to fail because they are dealing with denser problems
 - Parallelizing Cholesky
+-
+
+- LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+- export LD_LIBRARY_PATH
