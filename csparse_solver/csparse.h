@@ -79,6 +79,9 @@ typedef struct cs_dmperm_results    /* cs_dmperm or cs_scc output */
 
 int *cs_amd (const cs *A, int order) ;
 csn *cs_chol (const cs *A, const css *S) ;
+csn *cs_chol_sym (const cs *A, const css *S) ;
+int cs_leftchol (const cs *A, const css *S, csn *N) ;
+int cs_rechol(const cs *A, const css *S, csn *N) ;
 csd *cs_dmperm (const cs *A) ;
 int cs_droptol (cs *A, double tol) ;
 int cs_dropzeros (cs *A) ;

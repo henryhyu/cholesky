@@ -1,8 +1,10 @@
 #include "csparse.h"
 #include "mmio.h"
 #include <stdlib.h>
-# include <stdio.h>
+#include <stdio.h>
 #include <time.h>
+#include <unistd.h>
+
 int main (int argc, char *argv[]) {
     int ret_code;
     FILE *f;
@@ -10,16 +12,31 @@ int main (int argc, char *argv[]) {
     int i, *I, *J, n;
     double *val, *b;
     int order=0;
+    int algorithm=0;
 
-    if(argc > 2) {
-      order = atoi(argv[2]);
-    }
+    int opt;
+    char *file="default.txt";
 
+    while ((opt = getopt(argc, argv, "o:a:")) != -1)
+      {
+        switch (opt)
+          {
+          case 'o':
+            order = atoi(optarg);
+            break;
+          case 'a':
+            algorithm = atoi(optarg);
+            break;
+          }
+      }
+
+    file = argv[optind];
+    
     // Read in input mtx
-    if ((f = fopen(argv[1], "r")) == NULL)
+    if ((f = fopen(file, "r")) == NULL)
         exit(1);
 
-    const char *dot = strrchr(argv[1], '.');
+    const char *dot = strrchr(file, '.');
     if (!strcmp(dot,".mtx")) {
       if ((ret_code = mm_read_mtx_crd_size(f, &row, &col, &nz)) != 0)
         exit(1);
@@ -75,21 +92,26 @@ int main (int argc, char *argv[]) {
     double *x ;
     css *S ;
     csn *N ;
+    csn *N2;
     int ok;
 
     if (!A || !b) return (1);      /* check inputs */
     
-    clock_t symb_time, num_time, solve_time, total_time;
+    clock_t sanal_time, symb_time, num_time, solve_time, total_time;
     clock_t start = clock();
     clock_t start2 = start;
     S = cs_schol (A, order) ;       /* ordering and symbolic analysis */
+    sanal_time = clock()-start;
+    start = clock();
+    N = cs_chol_sym(A,S);
     symb_time = clock()-start;
     start = clock();
-    N = cs_chol (A, S);        /* numeric Cholesky factorization */
+    if(algorithm==0) cs_rechol(A,S,N);
+    else if (algorithm == 1) cs_leftchol(A,S,N);
+    //N = cs_chol (A, S);        /* numeric Cholesky factorization */
     num_time = clock()-start;
     x = cs_malloc (n, sizeof (double));
     ok = (S && N && x);
-//            printf("hello %p,%p,%p\n", S, N, x);
     fflush(stdout);
     if (ok) {
       start = clock();
@@ -102,7 +124,8 @@ int main (int argc, char *argv[]) {
     total_time = clock()-start2;
 //   printf("%d\n", ok);
   //  printf("%s,", argv[1]);
-   printf("Time taken on ordering and symbolic analysis: %f\n", symb_time*1.0/CLOCKS_PER_SEC);
+   printf("Time taken on ordering and symbolic analysis: %f\n", sanal_time*1.0/CLOCKS_PER_SEC);
+   printf("Time taken of symbolic factorization: %f\n", symb_time*1.0/CLOCKS_PER_SEC);
    printf("Time taken on numeric factorization: %f\n", num_time*1.0/CLOCKS_PER_SEC); 
    printf("Time taken on triangular solve: %f\n", solve_time*1.0/CLOCKS_PER_SEC);
    printf("Total time taken: %f\n", total_time*1.0/CLOCKS_PER_SEC);

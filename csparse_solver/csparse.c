@@ -447,7 +447,7 @@ int cs_ereach (const cs *A, int k, const int *parent, int *s, int *w,
     {
 	i = Ai [p] ;		    /* A(i,k) is nonzero */
 	if (i > k) continue ;	    /* only use upper triangular part of A */
-	x [i] = Ax [p] ;	    /* x(i) = A(i,k) */
+        x [i] = Ax [p] ;	    /* x(i) = A(i,k) */
 	for (len = 0 ; w [i] != k ; i = parent [i]) /* traverse up etree */
 	{
 	    s [len++] = i ;	    /* L(k,i) is nonzero */
@@ -499,6 +499,7 @@ csn *cs_chol (const cs *A, const css *S)
 	    d -= lki * lki ;	    /* d = d - L(k,i)*L(k,i) */
 	    p = c [i]++ ;
 	    Li [p] = k ;	    /* store L(k,i) in column i */
+            //printf("store %d %d\n", k, i);
 	    Lx [p] = lki ;
 	}
 	/* --- Compute L(k,k) ----------------------------------------------- */
@@ -508,12 +509,202 @@ csn *cs_chol (const cs *A, const css *S)
 	}
 	p = c [k]++ ;
 	Li [p] = k ;		    /* store L(k,k) = sqrt (d) in column k */
-	Lx [p] = sqrt (d) ;
+        Lx [p] = sqrt (d) ;
     }
     Lp [n] = cp [n] ;		    /* finalize L */
     return (cs_ndone (N, E, w, x, 1)) ; /* success: free E,w,x; return N */
 }
 
+csn *cs_chol_sym (const cs *A, const css *S)
+{
+    double *Lx, *x;
+    x=NULL;
+    int top, i, p, p2, len, k, n, *Li, *Lp, *cp, *Pinv, *w, *c, *parent, *Cp, *Ci ;
+    cs *L, *C, *E ;
+    csn *N ;
+    if (!A || !S || !S->cp || !S->parent) return (NULL) ;   /* check inputs */
+    n = A->n ;
+    N = cs_calloc (1, sizeof (csn)) ;
+    w = cs_malloc (2*n, sizeof (int)) ; c = w + n ;
+    cp = S->cp ; Pinv = S->Pinv ; parent = S->parent ;
+    C = Pinv ? cs_symperm (A, Pinv, 1) : ((cs *) A) ;
+    E = Pinv ? C : NULL ;
+    if (!N || !w || !C) return (cs_ndone (N, E, w, x, 0)) ;
+    N->L = L = cs_spalloc (n, n, cp [n], 1, 0) ;
+    if (!L) return (cs_ndone (N, E, w, x, 0)) ;
+    Lp = L->p ; Li = L->i ; Lx = L->x ;
+    Cp = C->p; Ci = C->i ;
+
+    for (k = 0 ; k < n ; k++)
+    {
+	/* --- Nonzero pattern of L(k,:) ------------------------------------ */
+        Lp [k] = c [k] = cp [k] ; /* column k of L starts here */	
+	w [k] = k ;		    /* mark node k as visited */
+        for (p2 = Cp [k] ; p2 < Cp [k+1] ; p2++)
+        {
+          i = Ci [p2] ;
+          if (i > k) continue ;
+          for (len = 0; w [i] != k; i = parent [i])
+          {
+            p = c [i]++;
+            Li [p] = k;
+            w [i] = k;
+          }
+        }
+     	
+	/* --- Compute L(k,k) ----------------------------------------------- */
+        p = c [k]++;
+        Li [p] = k ;
+    }
+    Lp [n] = cp [n] ;		    /* finalize L */
+    
+    return (cs_ndone (N, E, w, x, 1)) ; /* success: free E,w,x; return N */
+}
+
+int cs_leftchol (const cs *A, const css *S, csn *N)
+{
+    double d, lkj, *Lx, *x, *Cx, *CTx ;
+    int j, p, p2, k, n, *Li, *Lp, *cp, *Pinv, *c, *parent , *LTp, *LTi, *Cp, *Ci, *CTp, *CTi ;
+    cs *L, *C, *E , *LT, *CT ;
+    if (!A || !S || !S->cp || !S->parent) return (-1) ;   /* check inputs */
+    n = A->n ;
+    c = cs_malloc (n, sizeof (int)) ;
+    x = cs_calloc (n, sizeof (double)) ;
+    cp = S->cp ; Pinv = S->Pinv ; parent = S->parent ;
+    C = Pinv ? cs_symperm (A, Pinv, 1) : ((cs *) A) ;
+    Cp = C->p; Ci = C->i; Cx = C->x ;
+    E = Pinv ? C : NULL ;
+    if (!N || !c || !x || !C) return (-1) ;
+    L = N->L ;
+    Lp = L->p ; Li = L->i ; Lx = L->x ;
+    LT = cs_transpose (L, 0) ;
+    LTp = LT->p ; LTi = LT->i ;
+    CT = cs_transpose (C, 1) ;
+    CTp = CT->p ; CTi = CT->i ;
+    CTx = CT->x ;
+    
+    for (k = 0 ; k < n ; k++)
+    {
+	/* --- Nonzero pattern of L(k,:) ------------------------------------ */
+	c [k] = cp [k] ;   /* column k of L starts here */
+
+        //x(k:n) = A(k:n,k)
+        for (p = CTp [k] ; p < CTp [k+1] ; p++)
+        {
+          if (CTi [p] >= k) {
+            x [CTi [p]] = CTx [p] ;
+          }
+        }
+        
+	/* --- Triangular solve --------------------------------------------- */
+        
+        //find(L(k,:))
+        for(p2 = LTp [k] ; p2 < LTp[k+1] ; p2++)
+        {
+          if(LTi [p2] == k)
+            continue;
+          
+          j = LTi[p2] ;
+             
+          lkj = Lx [c [j]] ;
+          
+          for(p = c [j]; p < Lp [j+1] ; p++)    
+          {
+            x [Li [p]] -= (Lx [p] * lkj) ;
+          }
+          c [j]++;
+        }
+    
+        d = sqrt(x [k]) ;
+        Lx [ Lp [k]] = d ;
+    
+        for(p = c [k]+1 ; p < Lp [k+1] ; p++)
+        {
+          Lx [p] = x [Li [p]] / d ;
+          x [Li [p]] = 0 ;
+        }
+        
+        c [k]++ ;
+        x [k] = 0 ;
+
+	if (d <= 0) {
+          printf("%d %f broken\n", k, d);
+          cs_ndone (N, E, c, x, 0) ;
+          return (-1) ; /* not pos def */
+	}
+   
+    }
+    
+    cs_ndone (N, E, c, x, 1) ;
+    return (1) ; /* success: free E,c,x; */
+  
+}
+
+int cs_rechol (const cs *A, const css *S, csn *N)
+{
+    double d, lki, *Lx, *x, *Cx;
+    int i, p, p2, k, n, *Li, *Lp, *cp, *Pinv, *c, *parent , *LTp, *LTi, *Cp, *Ci;
+    cs *L, *C, *E , *LT;
+    if (!A || !S || !S->cp || !S->parent) return (-1) ;   /* check inputs */
+    n = A->n ;
+    c = cs_malloc (n, sizeof (int)) ;
+    x = cs_calloc (n, sizeof (double)) ;
+    cp = S->cp ; Pinv = S->Pinv ; parent = S->parent ;
+    C = Pinv ? cs_symperm (A, Pinv, 1) : ((cs *) A) ;
+    Cp = C->p; Ci = C->i; Cx = C->x ;
+    E = Pinv ? C : NULL ;
+    if (!N || !c || !x || !C) return (-1) ;
+    L = N->L ;
+    Lp = L->p ; Li = L->i ; Lx = L->x ;
+    LT = cs_transpose (L, 0) ;
+    LTp = LT->p ; LTi = LT->i ;
+    
+    for (k = 0 ; k < n ; k++)
+    {
+	/* --- Nonzero pattern of L(k,:) ------------------------------------ */
+	//Lp [k] = c [k] = cp [k] ;   /* column k of L starts here */
+        c [k] = cp [k];
+        x [k] = 0 ;		    /* x (0:k) is now zero */
+        for (p = Cp [k] ; p < Cp [k+1] ; p++)
+        {
+          if (Ci [p] <= k) x [Ci [p]] = Cx [p] ;
+        }
+        d = x [k] ;		    /* d = C(k,k) */
+	x [k] = 0 ;		    /* clear workspace for k+1st iteration */
+	/* --- Triangular solve --------------------------------------------- */
+        
+        for(p2 = LTp [k] ; p2 < LTp [k+1] ; p2++)
+        {
+          if(LTi [p2] == k)
+            continue;
+          
+          i = LTi[p2];
+          lki = x [i] / Lx [Lp [i]] ; /* L(k,i) = x (i) / L(i,i) */
+          x [i] = 0 ;		    /* clear workspace for k+1st iteration */
+          for (p = Lp [i] + 1 ; p < Lp [i+1] - 1; p++)
+          {
+            x [Li [p]] -= Lx [p] * lki ;
+          }
+          d -= lki * lki ;	    /* d = d - L(k,i)*L(k,i) */
+          p = c [i]++ ;
+          Lx [p] = lki ;
+        }
+	    
+    
+	/* --- Compute L(k,k) ----------------------------------------------- */
+	if (d <= 0) {
+          printf("%d %f broken\n", k, d);
+          cs_ndone (N, E, c, x, 0);
+          return (-1) ; /* not pos def */
+	}
+        
+	p = c [k]++ ;
+        Lx [p] = sqrt (d) ;
+    }
+
+    cs_ndone (N, E, c, x, 1);
+    return (1) ; /* success: free E,c,x; */
+}
 
 /* x=A\b where A is symmetric positive definite; b overwritten with solution */
 int cs_cholsol (const cs *A, double *b, int order)
